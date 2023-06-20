@@ -1,4 +1,3 @@
 *.exe
 *.dll
-./api/.idea
-./api/.vs
+.idea
