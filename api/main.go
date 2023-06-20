@@ -23,4 +23,5 @@ func main() {
 	app.Use(logger.New())
 	setupRoutes(app)
 	app.Listen(os.Getenv("APP_PORT"))
+
 }
