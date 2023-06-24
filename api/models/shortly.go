@@ -1,6 +1,8 @@
 package models
 
 import (
+	"net/url"
+
 	"gorm.io/gorm"
 )
 
@@ -11,17 +13,19 @@ type Shortly struct {
 	ShortURL    string `json:"short_url" gorm:"unique;not null"`
 	Visits      uint   `json:"visits"`
 	Random      bool   `json:"random"`
+	UserID      uint   `json:"user_id" gorm:"null"`
 }
 
 // get all shortlies
 func GetAllShortlies() ([]Shortly, error) {
 	db := DB
-	var shortly []Shortly
-	result := db.Find(&shortly)
+	var shortlies []Shortly
+	//get all shortlies with their user
+	result := db.Find(&shortlies)
 	if result.Error != nil {
 		return []Shortly{}, result.Error
 	}
-	return shortly, nil
+	return shortlies, nil
 }
 
 // get shortly by id
@@ -36,23 +40,19 @@ func GetShortlyById(id uint) (Shortly, error) {
 }
 
 // create shortly
-func CreateShortly(shortly Shortly) (Shortly, error) {
+func CreateShortly(shortly Shortly) error {
 	db := DB
+	// create shortly and assign it to the user that created it
 	result := db.Create(&shortly)
-	if result.Error != nil {
-		return Shortly{}, result.Error
-	}
-	return shortly, nil
+
+	return result.Error
 }
 
 // update shortly
-func UpdateShortly(shortly Shortly) (Shortly, error) {
+func UpdateShortly(shortly Shortly) error {
 	db := DB
 	result := db.Save(&shortly)
-	if result.Error != nil {
-		return Shortly{}, result.Error
-	}
-	return shortly, nil
+	return result.Error
 }
 
 // delete shortly
@@ -66,7 +66,7 @@ func DeleteShortly(id uint) error {
 }
 
 // find shortly by short url
-func findByShortlyUrl(url string) (Shortly, error) {
+func FindByShortlyUrl(url string) (Shortly, error) {
 	db := DB
 	var shortly Shortly
 	result := db.Where("short_url = ?", url).First(&shortly)
@@ -74,4 +74,10 @@ func findByShortlyUrl(url string) (Shortly, error) {
 		return Shortly{}, result.Error
 	}
 	return shortly, nil
+}
+
+// validate shortly is a valid url link
+func IsValidURL(RedirectURL string) bool {
+	u, err := url.Parse(RedirectURL)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }

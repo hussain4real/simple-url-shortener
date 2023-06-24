@@ -28,7 +28,7 @@ func Home(c *fiber.Ctx) error {
 func GetAllUsers(c *fiber.Ctx) error {
 	db := models.DB
 	var users []models.User
-	db.Find(&users)
+	db.Preload("Shortlies").Find(&users)
 	return c.JSON(users)
 }
 
@@ -58,7 +58,7 @@ func GetUser(c *fiber.Ctx) error {
 	var user models.User
 
 	db := models.DB
-	db.Where("id = ?", (*claims)["id"]).First(&user)
+	db.Preload("Shortlies").Where("id = ?", (*claims)["id"]).First(&user)
 
 	return c.JSON(user)
 }

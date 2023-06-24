@@ -11,4 +11,5 @@ type User struct {
 	UserName  string `json:"user_name"`
 	Email     string `json:"email" gorm:"unique"`
 	Password  string `json:"password"`
+	Shortlies []Shortly
 }

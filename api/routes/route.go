@@ -23,6 +23,9 @@ func SetupRoutes(app *fiber.App) {
 	v1.Delete("/users/:id", controllers.DeleteUser)
 
 	//shortly routes
-	v1.Get("/shortly", controllers.GetAllRedirects)
+	v1.Get("/r/:redirect", controllers.Redirect)
+	v1.Get("/shortly", controllers.GetAllShortlies)
+	v1.Get("/shortly/:id", controllers.GetShortly)
+	v1.Post("/shortly", controllers.CreateShortly)
 
 }
