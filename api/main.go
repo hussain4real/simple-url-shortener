@@ -1,27 +1,32 @@
 package main
 
 import (
-	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/hussain4real/simple-url-shortener/routes"
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/hussain4real/simple-url-shortener/initializers"
+	"github.com/hussain4real/simple-url-shortener/routes"
 )
 
-func setupRoutes(app *fiber.App) {
-	app.Get("/:url", routes.ResolveURL)
-	app.Post("/api/v1", routes.ShortenURL)
+func init() {
+	initializers.LoadEnvVariables()
+	initializers.ConnectToDB()
+
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println(err)
-	}
 	app := fiber.New()
 	app.Use(logger.New())
-	setupRoutes(app)
-	app.Listen(os.Getenv("APP_PORT"))
-
+	app.Use(cors.New(cors.Config{
+		AllowCredentials: true,
+	}))
+	routes.SetupRoutes(app)
+	// handle unavailable route
+	app.Use(func(c *fiber.Ctx) error {
+		return c.SendStatus(404) // => 404 "Not Found"
+	})
+	//app.Listen using env variable
+	app.Listen(":" + os.Getenv("PORT"))
 }
