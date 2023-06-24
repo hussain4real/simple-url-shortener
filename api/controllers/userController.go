@@ -5,7 +5,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/hussain4real/simple-url-shortener/initializers"
 	"github.com/hussain4real/simple-url-shortener/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,7 +26,7 @@ func Home(c *fiber.Ctx) error {
 
 // GetAllUsers func
 func GetAllUsers(c *fiber.Ctx) error {
-	db := initializers.DB
+	db := models.DB
 	var users []models.User
 	db.Find(&users)
 	return c.JSON(users)
@@ -58,7 +57,7 @@ func GetUser(c *fiber.Ctx) error {
 
 	var user models.User
 
-	db := initializers.DB
+	db := models.DB
 	db.Where("id = ?", (*claims)["id"]).First(&user)
 
 	return c.JSON(user)
@@ -66,7 +65,7 @@ func GetUser(c *fiber.Ctx) error {
 
 // Logic to register user
 func RegisterUser(c *fiber.Ctx) error {
-	db := initializers.DB
+	db := models.DB
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
@@ -95,7 +94,7 @@ const SecretKey = "secret"
 
 // LoginUser func
 func LoginUser(c *fiber.Ctx) error {
-	db := initializers.DB
+	db := models.DB
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {

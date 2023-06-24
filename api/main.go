@@ -7,12 +7,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/hussain4real/simple-url-shortener/initializers"
+	"github.com/hussain4real/simple-url-shortener/models"
 	"github.com/hussain4real/simple-url-shortener/routes"
 )
 
 func init() {
 	initializers.LoadEnvVariables()
-	initializers.ConnectToDB()
+	models.ConnectToDB()
 
 }
 
