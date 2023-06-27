@@ -119,12 +119,14 @@ func CreateShortly(c *fiber.Ctx) error {
 			})
 		}
 
+		// Overide the random value to false since it is a guest user
+		shortly.Random = true
 		// Generate a random URL for the shortly
 
 		shortly.ShortURL = utils.RandomUrl(8)
 
 		// Set the guest user ID on the shortly record
-		shortly.UserID = guestUser.ID
+		shortly.UserID = guestUser.UserID
 
 		// Create the shortly
 		err = models.CreateShortly(shortly)

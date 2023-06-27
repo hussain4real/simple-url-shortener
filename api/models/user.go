@@ -3,19 +3,20 @@ package models
 import (
 	"math/rand"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
+	UserID    uint   `json:"user_id" gorm:"primary_key"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	UserName  string `json:"user_name"`
 	Email     string `json:"email" gorm:"unique"`
 	Password  string `json:"password"`
 	Shortlies []Shortly
-	IsGuest   bool `json:"is_guest" gorm:"default:false"`
+	IsGuest   bool       `json:"is_guest" gorm:"default:false"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 func RandomString(length int) string {
@@ -39,6 +40,8 @@ func CreateGuestUser() (*User, error) {
 
 	if guestUser.Email != "guest@guest.com" {
 		guestUser = User{
+			// override gorm user id to string 'h123'
+			UserID:    12,
 			FirstName: RandomString(10),
 			LastName:  RandomString(10),
 			UserName:  RandomString(10),

@@ -87,7 +87,7 @@ func LoginUser(c *fiber.Ctx) error {
 
 	db.Where("email = ?", data["email"]).First(&user) //Check the email is present in the DB
 
-	if user.ID == 0 { //If the ID return is '0' then there is no such email present in the DB
+	if user.UserID == 0 { //If the ID return is '0' then there is no such email present in the DB
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
 			"message": "user not found",
@@ -115,7 +115,7 @@ func LoginUser(c *fiber.Ctx) error {
 func Auth(c *fiber.Ctx, user models.User) (error, bool) {
 	//Create JWT token
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  user.ID,
+		"id":  user.UserID,
 		"exp": time.Now().Add(time.Hour * 24).Unix(), //Set the expiration time of the token to 24 hours
 	})
 	token, err := claims.SignedString([]byte(SecretKey))

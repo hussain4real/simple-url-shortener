@@ -38,6 +38,7 @@ func ConnectToDB() {
 	DB.AutoMigrate(&User{}, &Shortly{})
 
 	// delete all guest users and their shortlies
-	DB.Where("is_guest = ?", true).Delete(&User{})
+	DB.Unscoped().Select("User").Where("user_id = ?", 12).Delete(&Shortly{})
+	// DB.Where("is_guest = ?", true).Delete(&Shortly{})
 
 }

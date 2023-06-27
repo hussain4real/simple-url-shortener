@@ -13,7 +13,7 @@ type Shortly struct {
 	ShortURL    string `json:"short_url" gorm:"unique;not null"`
 	Visits      uint   `json:"visits"`
 	Random      bool   `json:"random"`
-	UserID      uint   `json:"user_id" gorm:"null"`
+	UserID      uint   `json:"user_id" gorm:"foreignkey:UserID"`
 }
 
 // get all shortlies
