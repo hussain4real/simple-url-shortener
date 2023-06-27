@@ -11,25 +11,7 @@ import (
 
 // Home func
 func Home(c *fiber.Ctx) error {
-	//check if user is authenticated
-	cookie := c.Cookies("jwt")
-
-	if cookie == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "unauthenticated",
-		})
-	}
-	return c.JSON(fiber.Map{
-		"message": "success",
-	})
-}
-
-// GetAllUsers func
-func GetAllUsers(c *fiber.Ctx) error {
-	db := models.DB
-	var users []models.User
-	db.Preload("Shortlies").Find(&users)
-	return c.JSON(users)
+	return c.SendString("Hello, World 👋!")
 }
 
 // GetUser func

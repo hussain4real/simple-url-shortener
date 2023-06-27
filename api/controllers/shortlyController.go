@@ -32,7 +32,15 @@ func Redirect(c *fiber.Ctx) error {
 
 // get all shortlies
 func GetAllShortlies(c *fiber.Ctx) error {
-	shortlies, err := models.GetAllShortlies()
+	// get auth user id
+	userID, err := utils.GetUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// get all shortlies by user id
+	shortlies, err := models.GetAllShortliesByUserId(*userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "could not get all shortlies " + err.Error(),
@@ -46,17 +54,31 @@ func GetAllShortlies(c *fiber.Ctx) error {
 
 // get a single shortly
 func GetShortly(c *fiber.Ctx) error {
-	//get from params
+	// get auth user id
+	userID, err := utils.GetUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+	// get shortly id from params
 	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "invalid id " + err.Error(),
 		})
 	}
+	// get shortly by id
 	shortly, err := models.GetShortlyById(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "could not get shortly " + err.Error(),
+		})
+	}
+	// check if user is owner of shortly
+	if shortly.UserID != *userID {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "unauthorized",
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -67,16 +89,58 @@ func GetShortly(c *fiber.Ctx) error {
 
 // create a shortly
 func CreateShortly(c *fiber.Ctx) error {
-	// Get the current user ID from the JWT token
+	// check if there is a user id in the token
 	userID, err := utils.GetUserIDFromToken(c)
-
-	//check if user is unauthenticated
+	//if user id is not in the token, create a shortly url omitting the user id
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "unauthenticated",
-		})
 
+		//create a guest user
+		var guestUser *models.User
+
+		guestUser, err = models.CreateGuestUser()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "could not create guest user " + err.Error(),
+			})
+		}
+
+		//get from body
+		var shortly models.Shortly
+		err = c.BodyParser(&shortly)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "could not parse request " + err.Error(),
+			})
+		}
+		//check if the url is valid
+		if !models.IsValidURL(shortly.RedirectURL) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "invalid url",
+			})
+		}
+
+		// Generate a random URL for the shortly
+
+		shortly.ShortURL = utils.RandomUrl(8)
+
+		// Set the guest user ID on the shortly record
+		shortly.UserID = guestUser.ID
+
+		// Create the shortly
+		err = models.CreateShortly(shortly)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "could not create shortly " + err.Error(),
+			})
+		}
+
+		return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+			"message": "success",
+			"data":    shortly,
+		})
 	}
+
+	//if user id is in the token, create a shortly url and save it to the database
 
 	//get from body
 	var shortly models.Shortly

@@ -39,10 +39,20 @@ func GetShortlyById(id uint) (Shortly, error) {
 	return shortly, nil
 }
 
+// get shortly by user id
+func GetAllShortliesByUserId(id uint) ([]Shortly, error) {
+	db := DB
+	var shortlies []Shortly
+	result := db.Where("user_id = ?", id).Find(&shortlies)
+	if result.Error != nil {
+		return []Shortly{}, result.Error
+	}
+	return shortlies, nil
+}
+
 // create shortly
 func CreateShortly(shortly Shortly) error {
 	db := DB
-	// create shortly and assign it to the user that created it
 	result := db.Create(&shortly)
 
 	return result.Error

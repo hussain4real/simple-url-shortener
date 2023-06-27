@@ -31,6 +31,13 @@ func ConnectToDB() {
 	}
 	//log.Println("Database connection successful")
 	log.Println("Database connection successful")
-	// Migrate the schema
+
+	//reset database
+	// DB.Migrator().DropTable(&User{}, &Shortly{})
+	// Migrate the schema every time the application starts
 	DB.AutoMigrate(&User{}, &Shortly{})
+
+	// delete all guest users and their shortlies
+	DB.Where("is_guest = ?", true).Delete(&User{})
+
 }
