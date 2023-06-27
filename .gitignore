@@ -2,4 +2,4 @@
 *.dll
 .idea
 ./api/.idea
-./temp
+/temp
