@@ -40,9 +40,12 @@ func GetUser(c *fiber.Ctx) error {
 	var user models.User
 
 	db := models.DB
-	db.Preload("Shortlies").Where("id = ?", (*claims)["id"]).First(&user)
+	db.Preload("Shortlies").Where("user_id = ?", (*claims)["user_id"]).First(&user)
 
-	return c.JSON(user)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "success",
+		"user":    user,
+	})
 }
 
 // Logic to register user
