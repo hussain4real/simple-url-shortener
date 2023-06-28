@@ -13,7 +13,7 @@ func SetupRoutes(app *fiber.App) {
 
 	//routes
 
-	v1.Get("/home", controllers.Home)
+	v1.Get("/", controllers.Home)
 	v1.Get("/user", controllers.GetUser)
 	v1.Post("/register", controllers.RegisterUser)
 	v1.Post("/login", controllers.LoginUser)
