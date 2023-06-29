@@ -92,9 +92,37 @@ func RegisterUser(c *fiber.Ctx) error {
 	}
 	db.Create(&user)
 
+	// create jwt token
+	err, done := Auth(c, user)
+	if done {
+		return err
+	}
+	// log user in
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["userId"] = user.UserID
+	claims["email"] = user.Email
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() //Token expires after 24 hours
+	s, err := token.SignedString([]byte(SecretKey))
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError)
+		return c.JSON(fiber.Map{
+			"message": "could not login",
+		})
+	}
+	// set cookie
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    s,
+		Expires:  time.Now().Add(time.Hour * 24), //Expires after 24 hours
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
+
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "User created",
 		"user":    user,
+		"token":   s,
 	})
 
 }
