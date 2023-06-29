@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/hussain4real/simple-url-shortener/models"
+	"github.com/hussain4real/simple-url-shortener/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,37 +17,59 @@ func Home(c *fiber.Ctx) error {
 
 // GetUser func
 func GetUser(c *fiber.Ctx) error {
-	cookie := c.Cookies("jwt")
-
-	token, err := jwt.ParseWithClaims(cookie, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-
+	//get auth user id
+	userID, err := utils.GetUserIDFromToken(c)
 	if err != nil {
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "unauthenticated",
 		})
 	}
-
-	claims, ok := token.Claims.(*jwt.MapClaims)
-	if !ok {
-		c.Status(fiber.StatusInternalServerError)
-		return c.JSON(fiber.Map{
-			"message": "could not get user",
+	// get user by id
+	var user models.User
+	err = models.DB.Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "could not get user " + err.Error(),
 		})
 	}
-
-	var user models.User
-
-	db := models.DB
-
-	db.Preload("Shortlies").Where("email = ?", (*claims)["email"]).First(&user)
-
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "success",
-		"user":    user,
+		"data":    user,
 	})
+
+	// cookie := c.Cookies("jwt")
+
+	// token, err := jwt.ParseWithClaims(cookie, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+	// 	return []byte(SecretKey), nil
+	// })
+
+	// if err != nil {
+	// 	c.Status(fiber.StatusUnauthorized)
+	// 	return c.JSON(fiber.Map{
+	// 		"message": "unauthenticated",
+	// 	})
+	// }
+
+	// claims, ok := token.Claims.(*jwt.MapClaims)
+	// if !ok {
+	// 	c.Status(fiber.StatusInternalServerError)
+	// 	return c.JSON(fiber.Map{
+	// 		"message": "could not get user",
+	// 	})
+	// }
+
+	// var user models.User
+
+	// db := models.DB
+
+	// // get user from db
+	// db.Where("id = ?", (*claims)["userId"]).First(&user)
+
+	// // db.Preload("Shortlies").Where("email = ?", (*claims)["email"]).First(&user)
+	// return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 	"message": "success",
+	// 	"user":    user,
+	// })
 }
 
 // Logic to register user
