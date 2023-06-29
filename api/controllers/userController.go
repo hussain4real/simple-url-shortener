@@ -26,7 +26,7 @@ func GetUser(c *fiber.Ctx) error {
 	}
 	// get user by id
 	var user models.User
-	err = models.DB.Where("id = ?", userID).First(&user).Error
+	err = models.DB.Where("user_id = ?", userID).First(&user).Error
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "could not get user " + err.Error(),
