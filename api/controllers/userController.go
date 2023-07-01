@@ -109,6 +109,7 @@ func LoginUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "success",
 		"user":    user,
+		"jwt":     c.Body(),
 	})
 }
 
